@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google × Spider-Man — Your Web. Your World.</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={
+  theme:{
+    extend:{
+      fontFamily:{ syne:['Syne','sans-serif'], space:['Space Grotesk','sans-serif'], mono:['JetBrains Mono','monospace'], serif:['Instrument Serif','serif'] },
+      colors:{ cherry:'#FF1432', cherryDark:'#8B0020', ink:'#050507' }
+    }
+  }
+}
+</script>
+<style>
+*{scroll-behavior:smooth}
+body{background:#050507;color:#fff;overflow-x:hidden;font-family:'Space Grotesk',sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#FF1432;border-radius:999px}
+.glass{background:rgba(18,18,18,0.65);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08)}
+.glass-strong{background:rgba(12,12,12,0.9);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.07)}
+.hero-grid{background-image:linear-gradient(rgba(255,20,50,0.035) 1px, transparent 1px),linear-gradient(90deg, rgba(255,20,50,0.035) 1px, transparent 1px);background-size:46px 46px}
+.text-outline{-webkit-text-stroke:1px rgba(255,255,255,0.18);color:transparent}
+.glow-red{box-shadow:0 0 40px rgba(255,20,50,0.45), 0 0 80px rgba(255,20,50,0.18)}
+.glow-soft{box-shadow:0 8px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,20,50,0.12), inset 0 1px 0 rgba(255,255,255,0.06)}
+.shimmer{position:relative;overflow:hidden}
+.shimmer:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.08) 45%, transparent 60%);transform:translateX(-100%);animation:shimmer 3.2s infinite}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(12px,-14px)}100%{transform:translate(0,0)}}
+@keyframes pulseGlow{0%,100%{opacity:0.9;transform:scale(1)}50%{opacity:0.45;transform:scale(1.08)}}
+.reveal{opacity:0;transform:translateY(18px);transition:all .75s cubic-bezier(.16,1,.3,1)}
+.reveal.in{opacity:1;transform:none}
+.web-frame{position:relative;background:radial-gradient(600px 400px at 50% 0%, rgba(255,20,50,0.14), transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));border:1px solid rgba(255,20,50,0.22)}
+.web-frame:before,.web-frame:after{content:"";position:absolute;width:22px;height:22px;border-color:#FF1432;opacity:0.9}
+.web-frame:before{top:-1px;left:-1px;border-top:2px solid;border-left:2px solid}
+.web-frame:after{bottom:-1px;right:-1px;border-bottom:2px solid;border-right:2px solid}
+.corner2:before,.corner2:after{content:"";position:absolute;width:22px;height:22px;border-color:#FF1432;opacity:0.9}
+.corner2:before{top:-1px;right:-1px;border-top:2px solid;border-right:2px solid}
+.corner2:after{bottom:-1px;left:-1px;border-bottom:2px solid;border-left:2px solid}
+.range::-webkit-slider-thumb{appearance:none;width:16px;height:16px;border-radius:50%;background:#FF1432;box-shadow:0 0 12px rgba(255,20,50,0.9);cursor:pointer}
+</style>
+</head>
+<body class="antialiased selection:bg-[#FF1432] selection:text-white">
+<!-- canvases -->
+<canvas id="bgParticles" class="fixed inset-0 -z-10"></canvas>
+<canvas id="webCanvas" class="fixed inset-0 pointer-events-none" style="z-index:15"></canvas>
+<div id="cursorGlow" class="fixed w-[520px] h-[520px] rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 hidden lg:block" style="z-index:10;background:radial-gradient(circle, rgba(255,20,50,0.16) 0%, rgba(255,20,50,0.06) 28%, transparent 72%);filter:blur(4px);opacity:0.9"></div>
+
+<!-- NAV -->
+<nav class="fixed top-0 inset-x-0 z-40">
+<div class="mx-auto max-w-[1320px] px-4 md:px-6 mt-3 md:mt-4">
+<div class="glass-strong rounded-2xl md:rounded-full px-4 md:px-6 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-white flex items-center justify-center font-syne font-800 text-[11px] leading-none text-black tracking-tight">G<span class="text-[#FF1432]">×</span>S</div>
+<span class="hidden md:block font-syne font-700 text-[13px] tracking-[0.14em]">GOOGLE <span class="text-[#FF1432]">×</span> SPIDER-MAN</span>
+</div>
+<div class="hidden lg:flex items-center gap-7 text-[12px] tracking-[0.18em] font-medium text-white/70">
+<a href="#home" class="hover:text-white transition navlink text-white">HOME</a>
+<a href="#spider-web" class="hover:text-white transition navlink">SPIDER WEB</a>
+<a href="#upload" class="hover:text-white transition navlink">UPLOAD PHOTO</a>
+<a href="#gallery" class="hover:text-white transition navlink">GALLERY</a>
+<a href="#about" class="hover:text-white transition navlink">ABOUT</a>
+</div>
+<div class="flex items-center gap-2">
+<button id="navSearchBtn" class="hidden md:inline-flex items-center gap-2 text-[11px] tracking-widest text-white/60 border border-white/10 rounded-full px-4 py-2 hover:bg-white/5 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16.5 16.5"/></svg> SEARCH</button>
+<a href="#upload" class="hidden md:inline-flex items-center gap-2 bg-[#FF1432] hover:bg-[#E5102E] text-white text-[12px] font-bold tracking-widest rounded-full px-5 py-[10px] transition glow-red">UPLOAD MOMENT <span>↗</span></a>
+<button id="menuBtn" class="lg:hidden w-9 h-9 rounded-full bg-white text-black grid place-items-center">☰</button>
+</div>
+</div>
+<div id="mobileMenu" class="hidden lg:hidden mt-3 glass-strong rounded-2xl p-4 flex-col gap-3">
+<a href="#home" class="py-2 tracking-widest text-sm">HOME</a>
+<a href="#spider-web" class="py-2 tracking-widest text-sm">SPIDER WEB</a>
+<a href="#upload" class="py-2 tracking-widest text-sm">UPLOAD PHOTO</a>
+<a href="#gallery" class="py-2 tracking-widest text-sm">GALLERY</a>
+<a href="#about" class="py-2 tracking-widest text-sm">ABOUT</a>
+</div>
+</div>
+</nav>
+
+<!-- HERO -->
+<section id="home" class="relative pt-28 md:pt-36 pb-8 overflow-hidden">
+<div class="absolute inset-0 hero-grid opacity-[0.6]"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050507]"></div>
+<!-- red glows -->
+<div class="absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[520px] bg-[#FF1432] opacity-[0.09] blur-[90px] rounded-full pointer-events-none"></div>
+<div class="absolute top-[40%] -left-40 w-[520px] h-[520px] bg-[#FF1432] opacity-[0.06] blur-[80px] rounded-full pointer-events-none"></div>
+<div class="absolute top-[20%] -right-40 w-[640px] h-[640px] bg-[#8B0020] opacity-[0.08] blur-[90px] rounded-full pointer-events-none"></div>
+
+<div class="relative mx-auto max-w-[1320px] px-4 md:px-6">
+<!-- pill -->
+<div class="flex justify-center reveal in">
+<div class="inline-flex items-center gap-3 glass rounded-full px-3 py-2 text-[10px] md:text-xs tracking-[0.14em]">
+<span class="w-2 h-2 rounded-full bg-[#FF1432] shadow-[0_0_12px_#FF1432] animate-pulse"></span>
+<span class="text-white/80">CINEMATIC WEB EXPERIENCE</span>
+<span class="hidden md:inline-flex items-center gap-2 bg-[#FF1432] text-white px-3 py-1 rounded-full font-bold tracking-widest text-[10px]">LIVE • INTERACTIVE</span>
+</div>
+</div>
+
+<h1 class="text-center font-syne font-800 leading-[0.88] mt-6 md:mt-8 reveal in">
+<span class="block text-[42px] sm:text-[58px] md:text-[86px] lg:text-[108px] tracking-[-0.03em] text-white">GOOGLE <span class="text-[#FF1432]">×</span></span>
+<span class="block text-[42px] sm:text-[58px] md:text-[86px] lg:text-[108px] tracking-[-0.04em] text-outline">SPIDER-MAN</span>
+</h1>
+<p class="text-center mt-4 md:mt-6 font-serif italic text-[18px] md:text-[26px] text-white/90 reveal in">Your Web. Your World. Your Story.</p>
+<p class="text-center max-w-2xl mx-auto mt-3 text-[12px] md:text-sm leading-relaxed text-white/50 reveal in">Step inside a futuristic Google experience woven into the Spider-Verse. Search, connect, and leave your mark on an infinite web — cinematic, reactive, alive.</p>
+
+<!-- search -->
+<div class="max-w-[760px] mx-auto mt-8 md:mt-10 reveal in">
+<div class="glass-strong rounded-[28px] p-2 md:p-3 flex items-center gap-2 md:gap-3 glow-soft">
+<div class="hidden md:flex items-center gap-2 pl-4 pr-3">
+<div class="w-7 h-7 rounded-full bg-white grid place-items-center text-[11px] font-800 text-black">G</div>
+<span class="text-white/30 text-sm">|</span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L19 19"/></svg>
+</div>
+<input id="heroSearch" placeholder="Search your Spider-Verse…" class="flex-1 bg-transparent outline-none text-[14px] md:text-[15px] placeholder:text-white/35 px-3 md:px-0 py-2">
+<button id="clearSearch" class="hidden w-8 h-8 rounded-full bg-white/10 grid place-items-center text-white/60 hover:text-white">✕</button>
+<button id="searchBtn" class="shrink-0 w-11 h-11 md:w-[52px] md:h-[52px] rounded-full bg-[#FF1432] hover:bg-[#E5102E] grid place-items-center text-white transition glow-red">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg>
+</button>
+</div>
+<div class="flex flex-wrap justify-center gap-2 mt-4 text-[11px] tracking-wide">
+<span class="text-white/40 hidden md:inline mr-1">Trending:</span>
+<button class="chip px-3 py-1.5 rounded-full border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition" data-chip="Miles Morales">#MilesMorales</button>
+<button class="chip px-3 py-1.5 rounded-full border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition" data-chip="Web Slinger">#WebSlinger</button>
+<button class="chip px-3 py-1.5 rounded-full border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition" data-chip="Spider Verse">#SpiderVerse</button>
+<button class="chip px-3 py-1.5 rounded-full border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition" data-chip="Night Web">#NightWeb</button>
+</div>
+</div>
+
+<!-- stats + visual -->
+<div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-6 md:gap-8 mt-8 md:mt-10 items-stretch">
+<!-- left cards -->
+<div class="space-y-4">
+<div class="grid grid-cols-3 gap-3 md:gap-4">
+<div class="glass rounded-2xl p-4 md:p-5 text-center">
+<div class="text-[22px] md:text-[28px] font-syne font-800">12M+</div><div class="text-[10px] tracking-[0.2em] text-white/45">WEBS CAST</div>
+</div>
+<div class="glass rounded-2xl p-4 md:p-5 text-center border-[#FF1432]/20">
+<div class="text-[22px] md:text-[28px] font-syne font-800 text-[#FF1432]">4.9</div><div class="text-[10px] tracking-[0.2em] text-white/45">CINEMATIC</div>
+</div>
+<div class="glass rounded-2xl p-4 md:p-5 text-center">
+<div class="text-[22px] md:text-[28px] font-syne font-800">∞</div><div class="text-[10px] tracking-[0.2em] text-white/45">UNIVERSES</div>
+</div>
+</div>
+<div class="glass rounded-[22px] p-4 md:p-6 flex gap-4 items-center reveal">
+<img src="https://images.unsplash.com/photo-1636841415440-e0051454a56a?q=80&w=200&auto=format&fit=crop" class="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover">
+<div class="flex-1">
+<div class="text-[11px] tracking-[0.18em] text-[#FF1432]">FEATURED WEB</div>
+<div class="font-syne font-700 text-[16px] md:text-lg leading-tight">The Night Web Awakens — <span class="italic font-serif font-normal text-white/90">Cinematic</span></div>
+<div class="text-xs text-white/50 mt-1 line-clamp-2">Move your cursor. Watch the web react. Click anywhere to shoot a strand across the canvas.</div>
+</div>
+<button onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})" class="hidden md:grid w-10 h-10 rounded-full bg-white text-black place-items-center shrink-0">↗</button>
+</div>
+<div class="glass rounded-2xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-[#FF1432] grid place-items-center text-xs">◉</span>
+<div><div class="text-xs font-bold tracking-widest">WEB INTERACTION: ACTIVE</div><div class="text-[11px] text-white/50">Move & click to cast strands • Webs fade naturally</div></div>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399] animate-pulse hidden md:block"></span>
+</div>
+</div>
+<!-- right cinematic card -->
+<div class="relative glass rounded-[28px] overflow-hidden min-h-[360px] md:min-h-[420px] group">
+<img src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=1200&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-[0.95]">
+<div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+<div class="absolute inset-0 opacity-30" style="background:radial-gradient(500px 300px at 70% 20%, rgba(255,20,50,0.5), transparent 70%)"></div>
+<!-- web overlay svg -->
+<svg class="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 600 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g stroke="rgba(255,255,255,0.25)" stroke-width="0.9">
+<path d="M0 60 C150 80 300 10 600 90"/><path d="M0 140 C180 160 320 90 600 170"/><path d="M0 220 C200 240 340 170 600 250"/><path d="M120 0 C140 120 100 260 140 420"/><path d="M260 0 C280 140 240 280 300 420"/><path d="M420 0 C440 130 400 270 460 420"/>
+</g>
+<g stroke="rgba(255,20,50,0.9)" stroke-width="1.2">
+<path d="M60 210 L540 210"/><path d="M300 30 L300 390"/><path d="M150 120 L450 300"/><path d="M450 120 L150 300"/>
+</g>
+</svg>
+<div class="absolute top-4 left-4 flex items-center gap-2">
+<span class="bg-[#FF1432] text-white text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full">CINEMATIC MODE</span>
+<span class="glass px-3 py-1.5 rounded-full text-[10px] tracking-widest">4K • 60FPS</span>
+</div>
+<div class="absolute bottom-0 inset-x-0 p-5 md:p-7">
+<div class="inline-flex items-center gap-2 glass px-3 py-1.5 rounded-full text-[10px] tracking-widest"><span class="w-1.5 h-1.5 bg-[#FF1432] rounded-full animate-pulse"></span> HOVER TO FOCUS</div>
+<h3 class="font-syne font-800 text-[22px] md:text-[26px] leading-none mt-3">ENTER THE<br><span class="text-[#FF1432]">SPIDER-VERSE</span></h3>
+<p class="text-xs md:text-sm text-white/60 mt-2 max-w-[420px]">Every movement weaves a new strand. Your cursor is the spinneret.</p>
+<div class="flex gap-3 mt-4">
+<a href="#upload" class="bg-white text-black px-5 py-2.5 rounded-full text-xs font-bold tracking-widest hover:bg-white/90 transition">UPLOAD YOUR MOMENT</a>
+<a href="#spider-web" class="glass px-5 py-2.5 rounded-full text-xs font-bold tracking-widest hover:bg-white/10 transition">HOW IT WORKS</a>
+</div>
+</div>
+</div>
+</div>
+
+<div class="flex justify-center mt-8">
+<a href="#spider-web" class="w-9 h-9 rounded-full border border-white/15 grid place-items-center text-white/60 hover:text-white hover:border-white/30 transition">↓</a>
+</div>
+</div>
+</section>
+
+<!-- SPIDER WEB -->
+<section id="spider-web" class="relative py-10 md:py-16">
+<div class="mx-auto max-w-[1320px] px-4 md:px-6">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 reveal">
+<div>
+<div class="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] text-[#FF1432] font-bold"><span class="w-6 h-[1px] bg-[#FF1432]"></span> INTERACTIVE PHYSICS</div>
+<h2 class="font-syne font-800 text-[28px] md:text-[44px] leading-none mt-2">THE WEB <span class="text-white/20">IS ALIVE</span></h2>
+</div>
+<p class="text-sm text-white/55 max-w-[520px]">A real-time web engine. Strands connect to invisible anchors, curve with physics, glow with cherry-red light and fade like silk in wind.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-4 md:gap-6 reveal">
+<div class="glass rounded-[22px] p-6 md:p-7 relative overflow-hidden group hover:border-[#FF1432]/25 transition">
+<div class="absolute -right-6 -top-6 w-24 h-24 bg-[#FF1432] opacity-10 blur-2xl rounded-full"></div>
+<div class="w-11 h-11 rounded-xl bg-[#FF1432]/15 border border-[#FF1432]/20 grid place-items-center text-[#FF1432]">◎</div>
+<h3 class="font-syne font-700 mt-4">Reactive Strands</h3>
+<p class="text-sm text-white/55 mt-2 leading-relaxed">Move your mouse — webs seek nearby anchors up to 220px away, forming organic triangles.</p>
+<div class="mt-4 flex items-center gap-2 text-[11px] tracking-widest text-white/40"><span class="w-6 h-[1px] bg-white/20"></span> CURSOR MAGNETISM</div>
+</div>
+<div class="glass rounded-[22px] p-6 md:p-7 relative overflow-hidden group hover:border-[#FF1432]/25 transition">
+<div class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 grid place-items-center">⚡</div>
+<h3 class="font-syne font-700 mt-4">Cinematic Shoot</h3>
+<p class="text-sm text-white/55 mt-2 leading-relaxed">Click anywhere to fire a web. It arcs, sags, glows, impacts with a ripple and dissolves.</p>
+<div class="mt-4 flex items-center gap-2 text-[11px] tracking-widest text-white/40"><span class="w-6 h-[1px] bg-white/20"></span> CLICK • HOLD • FADE</div>
+</div>
+<div class="glass rounded-[22px] p-6 md:p-7 relative overflow-hidden group hover:border-[#FF1432]/25 transition">
+<div class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 grid place-items-center">✦</div>
+<h3 class="font-syne font-700 mt-4">Cherry Glow</h3>
+<p class="text-sm text-white/55 mt-2 leading-relaxed">Cherry-red bloom, particle dust and soft depth-of-field keep every frame movie-grade.</p>
+<div class="mt-4 flex items-center gap-2 text-[11px] tracking-widest text-white/40"><span class="w-6 h-[1px] bg-white/20"></span> 60FPS CANVAS</div>
+</div>
+</div>
+
+<div class="mt-6 glass rounded-[22px] p-3 md:p-4 flex flex-wrap items-center justify-between gap-3 reveal">
+<div class="flex items-center gap-3 text-xs">
+<span class="w-8 h-8 rounded-full bg-[#FF1432] grid place-items-center">✣</span>
+<span class="font-bold tracking-widest">TRY IT NOW</span>
+<span class="hidden md:inline text-white/40">— Move across this page and click. The web is listening.</span>
+</div>
+<div class="flex items-center gap-2 text-[11px]">
+<span class="hidden md:inline text-white/40 mr-2">SENSITIVITY</span>
+<input id="sensitivity" type="range" min="120" max="300" value="220" class="range w-28 md:w-40 accent-[#FF1432]">
+<span id="sensVal" class="glass px-3 py-1 rounded-full text-white/80">220 px</span>
+</div>
+</div>
+</div>
+</section>
+
+<!-- UPLOAD -->
+<section id="upload" class="relative py-10 md:py-16">
+<div class="mx-auto max-w-[1320px] px-4 md:px-6">
+<div class="text-center max-w-3xl mx-auto reveal">
+<div class="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-[11px] tracking-[0.18em] font-bold"><span class="w-1.5 h-1.5 bg-[#FF1432] rounded-full animate-pulse"></span> BECOME PART OF THE WEB</div>
+<h2 class="font-syne font-800 text-[32px] md:text-[52px] leading-none mt-4">UPLOAD YOUR <span class="text-[#FF1432]">SPIDER-MAN</span> MOMENT</h2>
+<p class="text-sm text-white/55 mt-3">Drop your photo into the web. It will be framed in futuristic silk, wrapped in reactive strands and added to the living gallery.</p>
+</div>
+
+<div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 md:gap-8 mt-8 reveal">
+<!-- drop zone -->
+<div id="dropZone" class="web-frame corner2 rounded-[24px] p-6 md:p-8 bg-[#0A0A0A] relative overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 opacity-[0.04]" style="background-image:radial-gradient(circle at 1px 1px, white 1px, transparent 0);background-size:22px 22px"></div>
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-[#FF1432] opacity-[0.08] blur-[50px] rounded-full pointer-events-none"></div>
+<div class="relative border border-dashed border-white/12 rounded-2xl p-6 md:p-8 text-center bg-white/[0.02] hover:bg-white/[0.04] transition">
+<div class="w-14 h-14 mx-auto rounded-2xl bg-[#FF1432] grid place-items-center text-white text-xl shadow-[0_8px_24px_rgba(255,20,50,0.5)]">⬆</div>
+<h3 class="font-syne font-700 mt-4 text-lg">Drop your moment here</h3>
+<p class="text-xs text-white/50 mt-1">PNG, JPG or WEBP — up to 10MB • Instant preview</p>
+<div class="flex flex-wrap justify-center gap-2 mt-4">
+<button id="uploadBtn" class="bg-[#FF1432] hover:bg-[#E5102E] text-white px-6 py-3 rounded-full text-xs font-bold tracking-widest transition">UPLOAD PHOTO</button>
+<button id="demoBtn" class="glass px-6 py-3 rounded-full text-xs font-bold tracking-widest hover:bg-white/10 transition">USE DEMO IMAGE</button>
+</div>
+<p class="text-[11px] tracking-widest text-white/30 mt-4">OR DRAG & DROP</p>
+<input id="photoInput" type="file" accept="image/*" class="hidden">
+<div class="flex justify-center gap-2 mt-4 text-[10px] tracking-widest text-white/35">
+<span class="glass px-3 py-1 rounded-full">AUTO FRAME</span><span class="glass px-3 py-1 rounded-full">WEB REACTIVE</span><span class="glass px-3 py-1 rounded-full">4K READY</span>
+</div>
+</div>
+<div id="successMessage" class="hidden mt-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-emerald-500 grid place-items-center text-white text-xs">✓</span>
+<span class="font-medium">Your moment is now part of the Web.</span>
+<span class="ml-auto text-xs text-emerald-300/70">Added to gallery ↓</span>
+</div>
+</div>
+
+<!-- preview -->
+<div class="web-frame rounded-[24px] p-4 md:p-6 bg-[#0A0A0A] relative overflow-hidden min-h-[420px] flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<span class="text-[11px] tracking-[0.18em] font-bold text-white/60">LIVE PREVIEW</span>
+<span id="previewBadge" class="text-[10px] tracking-widest bg-[#FF1432] text-white px-3 py-1 rounded-full">AWAITING UPLOAD</span>
+</div>
+
+<div id="previewWrap" class="relative flex-1 rounded-2xl overflow-hidden bg-[#141414] border border-white/5 grid place-items-center min-h-[300px]">
+<!-- empty state -->
+<div id="emptyState" class="text-center p-8">
+<div class="w-20 h-20 mx-auto rounded-2xl border border-white/10 grid place-items-center text-white/20 text-2xl">◫</div>
+<p class="text-sm text-white/40 mt-4">No moment yet</p>
+<p class="text-xs text-white/25">Your framed photo will appear here with<br>animated web strands.</p>
+</div>
+<img id="previewImg" class="hidden absolute inset-0 w-full h-full object-cover">
+<!-- web corners overlay -->
+<svg id="previewWeb" class="hidden absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 300" preserveAspectRatio="none">
+<g stroke="rgba(255,20,50,0.95)" stroke-width="1.1" fill="none">
+<path d="M0 0 L80 40 L40 80 Z"/><path d="M400 0 L320 40 L360 80 Z"/><path d="M0 300 L80 260 L40 220 Z"/><path d="M400 300 L320 260 L360 220 Z"/>
+<path d="M80 40 L320 40 L360 80 L360 220 L320 260 L80 260 L40 220 L40 80 Z" opacity="0.9"/>
+<path d="M40 80 L360 220" opacity="0.25"/><path d="M360 80 L40 220" opacity="0.25"/>
+</g>
+<g fill="#FF1432" opacity="0.9"><circle cx="40" cy="80" r="3"/><circle cx="360" cy="80" r="3"/><circle cx="40" cy="220" r="3"/><circle cx="360" cy="220" r="3"/></g>
+</svg>
+<div id="previewGlow" class="hidden absolute -inset-6 bg-[#FF1432] opacity-20 blur-[40px] pointer-events-none"></div>
+</div>
+
+<div class="grid grid-cols-3 gap-3 mt-4">
+<div class="glass rounded-xl p-3 text-center"><div class="text-[11px] tracking-widest text-white/40">FRAME</div><div class="text-xs font-bold mt-1">SPIDER-SILK</div></div>
+<div class="glass rounded-xl p-3 text-center"><div class="text-[11px] tracking-widest text-white/40">GLOW</div><div class="text-xs font-bold mt-1 text-[#FF1432]">CHERRY RED</div></div>
+<div class="glass rounded-xl p-3 text-center"><div class="text-[11px] tracking-widest text-white/40">STATUS</div><div id="statusText" class="text-xs font-bold mt-1">EMPTY</div></div>
+</div>
+
+<div class="flex gap-3 mt-4">
+<button id="removeBtn" class="flex-1 glass py-3 rounded-full text-xs font-bold tracking-widest hover:bg-white/10 transition disabled:opacity-40" disabled>REMOVE</button>
+<button id="replaceBtn" class="flex-1 bg-white text-black py-3 rounded-full text-xs font-bold tracking-widest hover:bg-white/90 transition disabled:opacity-40" disabled>REPLACE PHOTO</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="relative py-10 md:py-16">
+<div class="mx-auto max-w-[1320px] px-4 md:px-6">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 reveal">
+<div>
+<div class="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] font-bold text-[#FF1432]"><span class="w-6 h-[1px] bg-[#FF1432]"></span> LIVING COLLECTION</div>
+<h2 class="font-syne font-800 text-[28px] md:text-[44px] leading-none mt-2">THE WEB <span class="font-serif italic font-normal text-white/90">Gallery</span></h2>
+<p class="text-sm text-white/55 mt-2 max-w-xl">Every uploaded moment becomes a floating card, stitched together by luminous strands. Hover to feel the web tense.</p>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<div class="glass rounded-full p-1 flex gap-1 text-xs font-bold tracking-widest">
+<button data-filter="all" class="filterBtn bg-white text-black px-4 py-2 rounded-full">ALL</button>
+<button data-filter="recent" class="filterBtn px-4 py-2 rounded-full text-white/60 hover:text-white">RECENT</button>
+<button data-filter="popular" class="filterBtn px-4 py-2 rounded-full text-white/60 hover:text-white">POPULAR</button>
+<button data-filter="yours" class="filterBtn px-4 py-2 rounded-full text-white/60 hover:text-white">YOUR WEBS</button>
+</div>
+<span id="galleryCount" class="glass px-4 py-2 rounded-full text-xs font-bold tracking-widest">8 MOMENTS</span>
+</div>
+</div>
+
+<!-- gallery web bg -->
+<div class="relative mt-8 reveal">
+<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-[0.08] hidden md:block" viewBox="0 0 1200 600" fill="none"><g stroke="#FF1432" stroke-width="0.7"><path d="M0 80 L1200 140"/><path d="M0 260 L1200 200"/><path d="M0 420 L1200 480"/><path d="M180 0 L200 600"/><path d="M560 0 L540 600"/><path d="M900 0 L880 600"/><circle cx="600" cy="260" r="180" opacity="0.15"/></g></svg>
+<div id="galleryGrid" class="relative grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+<!-- cards injected by JS -->
+</div>
+<div id="noResults" class="hidden text-center py-16 glass rounded-2xl mt-6">
+<p class="text-white/60">No moments found for “<span id="noQuery"></span>”</p>
+<button onclick="clearSearch()" class="mt-3 text-[#FF1432] text-sm font-bold tracking-widest">CLEAR SEARCH →</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="relative py-12 md:py-20">
+<div class="mx-auto max-w-[1320px] px-4 md:px-6">
+<div class="glass rounded-[28px] overflow-hidden grid lg:grid-cols-[1.1fr_0.9fr] reveal">
+<div class="p-6 md:p-10">
+<div class="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] font-bold text-[#FF1432]"><span class="w-6 h-[1px] bg-[#FF1432]"></span> ABOUT THE EXPERIENCE</div>
+<h2 class="font-syne font-800 text-[28px] md:text-[40px] leading-none mt-3">GOOGLE MEETS<br><span class="text-[#FF1432]">SPIDER-MAN</span></h2>
+<p class="text-sm leading-relaxed text-white/60 mt-4">We fused Google’s clean, minimal precision with Spider-Man’s dark, cinematic power. Deep blacks, cherry-red bloom, glassmorphism and a physics-driven web that reacts to you — not pre-baked, but alive.</p>
+<div class="grid grid-cols-3 gap-4 mt-6">
+<div><div class="text-xl font-syne font-800 text-[#FF1432]">60 FPS</div><div class="text-[10px] tracking-widest text-white/40">CANVAS RENDER</div></div>
+<div><div class="text-xl font-syne font-800">100%</div><div class="text-[10px] tracking-widest text-white/40">RESPONSIVE</div></div>
+<div><div class="text-xl font-syne font-800">0</div><div class="text-[10px] tracking-widest text-white/40">COPYRIGHTED ASSETS</div></div>
+</div>
+<div class="flex flex-wrap gap-3 mt-8">
+<a href="#upload" class="bg-[#FF1432] text-white px-6 py-3 rounded-full text-xs font-bold tracking-widest hover:bg-[#E5102E] transition">CREATE YOUR WEB</a>
+<a href="#home" class="glass px-6 py-3 rounded-full text-xs font-bold tracking-widest hover:bg-white/10 transition">BACK TO TOP ↑</a>
+</div>
+</div>
+<div class="relative bg-[#0B0B0B] p-6 md:p-8 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-white/5">
+<div class="space-y-4">
+<div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-full bg-white text-black grid place-items-center text-xs shrink-0">◈</span><div><div class="text-sm font-bold">Inspired, not copied</div><p class="text-xs text-white/50">Original visuals, gradients and web math — no movie logos or copyrighted art.</p></div></div>
+<div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-full bg-[#FF1432] grid place-items-center text-xs shrink-0">◎</span><div><div class="text-sm font-bold">Built for performance</div><p class="text-xs text-white/50">Adaptive particle counts, DPR-aware canvas and mobile-optimized strands.</p></div></div>
+<div class="flex gap-3 items-start"><span class="w-8 h-8 rounded-full bg-white/10 border border-white/10 grid place-items-center text-xs shrink-0">⬢</span><div><div class="text-sm font-bold">Your web, your world</div><p class="text-xs text-white/50">Upload, search, explore — your moments stitch the collective gallery together.</p></div></div>
+</div>
+<div class="mt-8 glass rounded-2xl p-4 flex items-center gap-3">
+<img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" class="w-10 h-10 rounded-full object-cover">
+<div class="flex-1"><div class="text-xs font-bold">Designed for the fans</div><div class="text-xs text-white/40">Premium • Cinematic • Interactive</div></div>
+<span class="text-[#FF1432] text-xs tracking-widest font-bold">EST. 2025</span>
+</div>
+</div>
+</div>
+
+<footer class="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] tracking-widest text-white/35 py-6 border-t border-white/5">
+<span>© 2025 GOOGLE × SPIDER-MAN FAN EXPERIENCE — CRAFTED WITH WEB TECHNOLOGY</span>
+<span class="flex gap-4"><a href="#" class="hover:text-white">PRIVACY</a><a href="#" class="hover:text-white">TERMS</a><a href="#" class="hover:text-white">CONTACT</a></span>
+</footer>
+</div>
+</section>
+
+<!-- MODAL -->
+<div id="momentModal" class="fixed inset-0 z-50 hidden">
+<div id="modalBackdrop" class="absolute inset-0 bg-black/80 backdrop-blur-[6px]"></div>
+<div class="relative mx-auto max-w-[920px] px-4 py-8 md:py-12 h-full overflow-auto">
+<div class="glass-strong rounded-[24px] overflow-hidden">
+<div class="grid md:grid-cols-[1.2fr_0.8fr]">
+<img id="modalImg" src="" class="w-full h-[360px] md:h-[520px] object-cover">
+<div class="p-6 md:p-8 flex flex-col">
+<button id="closeModal" class="self-end w-8 h-8 rounded-full bg-white text-black grid place-items-center">✕</button>
+<div class="mt-4 inline-flex items-center gap-2 text-[11px] tracking-widest"><span class="bg-[#FF1432] text-white px-3 py-1 rounded-full font-bold">SPIDER-VERSE</span><span id="modalDate" class="text-white/40">TODAY</span></div>
+<h3 id="modalTitle" class="font-syne font-800 text-2xl mt-3 leading-tight">Moment Title</h3>
+<p id="modalDesc" class="text-sm text-white/60 mt-3 leading-relaxed">Description</p>
+<div class="mt-6 flex items-center gap-3"><img id="modalAvatar" src="" class="w-8 h-8 rounded-full object-cover"><div><div id="modalAuthor" class="text-xs font-bold">Author</div><div class="text-[11px] text-white/40">Web weaver</div></div><span id="modalLikes" class="ml-auto glass px-3 py-1.5 rounded-full text-xs">♥ 0</span></div>
+<div class="mt-6 grid grid-cols-2 gap-3"><button class="bg-[#FF1432] py-3 rounded-full text-xs font-bold tracking-widest">SHARE WEB</button><button class="glass py-3 rounded-full text-xs font-bold tracking-widest" onclick="closeModal()">CLOSE</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+// helpers
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+
+// mobile menu
+$('#menuBtn').addEventListener('click',()=>$('#mobileMenu').classList.toggle('hidden'))
+$$('#mobileMenu a').forEach(a=>a.addEventListener('click',()=>$('#mobileMenu').classList.add('hidden')))
+
+// cursor glow
+const glow=$('#cursorGlow');
+let mouse={x:innerWidth/2,y:innerHeight/2};
+addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;glow.style.left=mouse.x+'px';glow.style.top=mouse.y+'px';glow.style.opacity='1'});
+addEventListener('mouseleave',()=>glow.style.opacity='0');
+
+// bg particles
+const bgCanvas=$('#bgParticles'), bgCtx=bgCanvas.getContext('2d');
+let particles=[];
+function resizeBg(){
+  bgCanvas.width=innerWidth*devicePixelRatio;bgCanvas.height=innerHeight*devicePixelRatio;
+  bgCanvas.style.width=innerWidth+'px';bgCanvas.style.height=innerHeight+'px';
+  bgCtx.scale(devicePixelRatio,devicePixelRatio);
+  particles=Array.from({length: innerWidth<768?50:90},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.4+0.3,vx:(Math.random()-0.5)*0.25,vy:(Math.random()-0.5)*0.35,alpha:Math.random()*0.6+0.2}));
+}
+resizeBg();addEventListener('resize',resizeBg);
+(function animateBg(){
+  bgCtx.clearRect(0,0,innerWidth,innerHeight);
+  // subtle gradient
+  const g=bgCtx.createRadialGradient(innerWidth*0.5, -100, 100, innerWidth*0.5, -100, 900);
+  g.addColorStop(0,'rgba(255,20,50,0.07)'); g.addColorStop(1,'transparent');
+  bgCtx.fillStyle=g; bgCtx.fillRect(0,0,innerWidth,innerHeight);
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>innerWidth) p.vx*=-1;
+    if(p.y<0||p.y>innerHeight) p.vy*=-1;
+    bgCtx.beginPath(); bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCtx.fillStyle=`rgba(255,40,70,${p.alpha*0.7})`; bgCtx.shadowBlur=8; bgCtx.shadowColor='rgba(255,20,50,0.9)'; bgCtx.fill(); bgCtx.shadowBlur=0;
+  });
+  requestAnimationFrame(animateBg);
+})();
+
+// web canvas
+const canvas=$('#webCanvas'), ctx=canvas.getContext('2d');
+let anchors=[], shooting=[];
+let sensitivity=220;
+$('#sensitivity').addEventListener('input',e=>{sensitivity=parseInt(e.target.value);$('#sensVal').textContent=sensitivity+' px'});
+function initAnchors(){
+  const n= innerWidth<768? 28: 52;
+  anchors=Array.from({length:n},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-0.5)*0.35,vy:(Math.random()-0.5)*0.35}));
+}
+function resizeCanvas(){
+  canvas.width=innerWidth*devicePixelRatio; canvas.height=innerHeight*devicePixelRatio;
+  canvas.style.width=innerWidth+'px'; canvas.style.height=innerHeight+'px';
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  initAnchors();
+}
+resizeCanvas(); addEventListener('resize',resizeCanvas);
+let lastMouse={x:mouse.x,y:mouse.y};
+addEventListener('click',e=>{
+  // avoid shooting on interactive elements? still shoot but offset
+  const target=e.target;
+  if(target.closest('button')||target.closest('a')||target.closest('input')) {
+    // still create but don't prevent
+  }
+  shooting.push({sx:mouse.x,sy:mouse.y,ex:e.clientX,ey:e.clientY,progress:0,phase:'shoot',hold:26,life:1});
+});
+(function webLoop(){
+  ctx.clearRect(0,0,innerWidth,innerHeight);
+  // drift anchors
+  anchors.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>innerWidth) p.vx*=-1;
+    if(p.y<0||p.y>innerHeight) p.vy*=-1;
+    ctx.beginPath(); ctx.arc(p.x,p.y,1.1,0,Math.PI*2); ctx.fillStyle='rgba(255,20,50,0.14)'; ctx.fill();
+  });
+  // connections
+  anchors.forEach((p,i)=>{
+    const dx=p.x-mouse.x, dy=p.y-mouse.y, d=Math.hypot(dx,dy);
+    if(d < sensitivity){
+      const op=(1-d/sensitivity)*0.62;
+      ctx.beginPath();
+      ctx.moveTo(mouse.x,mouse.y);
+      const mx=(mouse.x+p.x)/2 + Math.sin(Date.now()*0.001 + i)*7;
+      const my=(mouse.y+p.y)/2 + Math.cos(Date.now()*0.001 + i)*4;
+      ctx.quadraticCurveTo(mx,my,p.x,p.y);
+      ctx.strokeStyle=`rgba(255,30,60,${op})`;
+      ctx.lineWidth= op*2.4;
+      ctx.shadowBlur=14; ctx.shadowColor='rgba(255,20,50,0.85)'; ctx.stroke(); ctx.shadowBlur=0;
+      // inter-anchor
+      anchors.forEach((p2,j)=>{
+        if(j<=i) return;
+        const d2=Math.hypot(p.x-p2.x,p.y-p2.y);
+        if(d2<130){
+          const midx=(p.x+p2.x)/2, midy=(p.y+p2.y)/2;
+          const dmid=Math.hypot(midx-mouse.x,midy-mouse.y);
+          if(dmid< sensitivity*0.9){
+            ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p2.x,p2.y);
+            ctx.strokeStyle=`rgba(255,30,60,${0.09*(1-dmid/sensitivity)})`; ctx.lineWidth=0.7; ctx.stroke();
+          }
+        }
+      });
+    }
+  });
+  // shooting
+  shooting.forEach(w=>{
+    if(w.phase==='shoot'){ w.progress+=0.085; if(w.progress>=1){w.progress=1; w.phase='hold'} }
+    else if(w.phase==='hold'){ w.hold--; if(w.hold<=0) w.phase='fade' }
+    else { w.life-=0.035 }
+    const cx=w.sx+(w.ex-w.sx)*w.progress, cy=w.sy+(w.ey-w.sy)*w.progress;
+    const op=w.phase==='fade'? w.life:0.95;
+    ctx.beginPath(); ctx.moveTo(w.sx,w.sy);
+    const cpx=(w.sx+cx)/2 + Math.sin(w.progress*Math.PI)*28;
+    const cpy=(w.sy+cy)/2 + Math.sin(w.progress*Math.PI)*12;
+    ctx.quadraticCurveTo(cpx,cpy,cx,cy);
+    ctx.strokeStyle=`rgba(255,45,70,${op})`; ctx.lineWidth=2.2; ctx.shadowBlur=18; ctx.shadowColor='rgba(255,20,50,1)'; ctx.stroke(); ctx.shadowBlur=0;
+    // secondary
+    ctx.beginPath(); ctx.moveTo(w.sx+1.5,w.sy+1.5); ctx.quadraticCurveTo(cpx+6,cpy,cx,cy);
+    ctx.strokeStyle=`rgba(255,120,140,${op*0.35})`; ctx.lineWidth=1; ctx.stroke();
+    if(w.progress===1){
+      const rad= 10 + (26-w.hold)*1.1;
+      ctx.beginPath(); ctx.arc(w.ex,w.ey, rad,0,Math.PI*2); ctx.strokeStyle=`rgba(255,40,70,${op*0.5})`; ctx.lineWidth=1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(w.ex,w.ey, rad*0.55,0,Math.PI*2); ctx.strokeStyle=`rgba(255,40,70,${op*0.25})`; ctx.stroke();
+    }
+  });
+  shooting=shooting.filter(w=>w.life>0);
+  requestAnimationFrame(webLoop);
+})();
+
+// reveal
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting) e.target.classList.add('in')}),{threshold:0.12});
+$$('.reveal').forEach(el=>io.observe(el));
+
+// gallery data
+let galleryData=[
+  {id:1,title:'Neon Web Over City',author:'A. Parker',likes:342,cat:'popular',img:'https://images.unsplash.com/photo-1519608487953-e999c86e7455?q=80&w=600&auto=format&fit=crop',desc:'Midnight swing above the skyline — cherry glow trails the silk.'},
+  {id:2,title:'Your Web, Your World',author:'M. Morales',likes:189,cat:'recent',img:'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?q=80&w=600&auto=format&fit=crop',desc:'A quiet moment, framed in spider-silk and city haze.'},
+  {id:3,title:'Crimson Skyline Pulse',author:'G. Stacy',likes:521,cat:'popular',img:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=600&auto=format&fit=crop',desc:'The web vibrates with every heartbeat of the city.'},
+  {id:4,title:'Web Slinger Shadow',author:'H. Osborn',likes:97,cat:'recent',img:'https://images.unsplash.com/photo-1534972195531-d7566158755d?q=80&w=600&auto=format&fit=crop',desc:'Silhouette against a cherry-red eclipse.'},
+  {id:5,title:'Night Web Protocol',author:'P. Parker',likes:412,cat:'popular',img:'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=600&auto=format&fit=crop',desc:'Futuristic HUD meets organic silk — the protocol is alive.'},
+  {id:6,title:'Spider-Verse Drift',author:'S. Web',likes:76,cat:'recent',img:'https://images.unsplash.com/photo-1514533212735-5df27d970db0?q=80&w=600&auto=format&fit=crop',desc:'Drifting between dimensions on a single thread.'},
+  {id:7,title:'Glass City Threads',author:'J. Jameson',likes:203,cat:'recent',img:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=600&auto=format&fit=crop',desc:'Reflections of silk on rain-slick glass.'},
+  {id:8,title:'Cinematic Bloom',author:'M. Jane',likes:398,cat:'popular',img:'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600&auto=format&fit=crop',desc:'Bloom, blur and bokeh — pure cinema.'},
+];
+let filter='all', searchQuery='';
+
+function renderGallery(){
+  const grid=$('#galleryGrid');
+  let list=[...galleryData];
+  if(searchQuery){
+    const q=searchQuery.toLowerCase();
+    list=list.filter(i=> i.title.toLowerCase().includes(q) || i.author.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q));
+  } else {
+    if(filter==='recent') list=list.slice().sort((a,b)=>b.id-a.id).slice(0,6);
+    else if(filter==='popular') list=list.filter(i=>i.likes>200);
+    else if(filter==='yours') list=list.filter(i=>i.yours);
+  }
+  grid.innerHTML='';
+  if(list.length===0){
+    $('#noResults').classList.remove('hidden'); $('#noQuery').textContent=searchQuery; $('#galleryCount').textContent='0 MOMENTS';
+    return;
+  }
+  $('#noResults').classList.add('hidden');
+  $('#galleryCount').textContent=list.length+' MOMENTS';
+  list.forEach(item=>{
+    const card=document.createElement('div');
+    card.className='group relative glass rounded-[22px] overflow-hidden hover:border-[#FF1432]/30 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.6),0_0_24px_rgba(255,20,50,0.15)]';
+    card.innerHTML=`
+      <div class="relative h-[220px] overflow-hidden">
+        <img src="${item.img}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-[1.06] transition duration-700">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+        <div class="absolute top-3 left-3 flex gap-2">
+          <span class="bg-[#FF1432] text-white text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-full">${item.cat.toUpperCase()}</span>
+          ${item.yours?'<span class="glass px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest">YOUR WEB</span>':''}
+        </div>
+        <div class="absolute top-3 right-3 glass w-8 h-8 rounded-full grid place-items-center text-white/70 group-hover:text-[#FF1432] transition">♥</div>
+        <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+          <span class="text-[11px] tracking-widest bg-black/55 backdrop-blur px-3 py-1 rounded-full border border-white/10">♡ ${item.likes}</span>
+          <span class="text-[11px] tracking-widest glass px-3 py-1 rounded-full">VIEW →</span>
+        </div>
+        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-0 group-hover:opacity-100 transition" viewBox="0 0 300 220" fill="none"><path d="M0 0 L60 30 L30 60" stroke="rgba(255,20,50,0.9)" stroke-width="1.2"/><path d="M300 0 L240 30 L270 60" stroke="rgba(255,20,50,0.9)" stroke-width="1.2"/><path d="M0 220 L60 190 L30 160" stroke="rgba(255,20,50,0.9)" stroke-width="1.2"/><path d="M300 220 L240 190 L270 160" stroke="rgba(255,20,50,0.9)" stroke-width="1.2"/></svg>
+      </div>
+      <div class="p-4">
+        <h3 class="font-syne font-700 leading-tight line-clamp-1">${item.title}</h3>
+        <p class="text-xs text-white/45 mt-1 line-clamp-1">${item.desc}</p>
+        <div class="flex items-center gap-2 mt-3">
+          <img src="https://i.pravatar.cc/100?u=${item.author}" class="w-6 h-6 rounded-full object-cover">
+          <span class="text-xs text-white/70">${item.author}</span>
+          <button data-id="${item.id}" class="viewBtn ml-auto bg-white text-black text-[11px] font-bold tracking-widest px-4 py-1.5 rounded-full hover:bg-[#FF1432] hover:text-white transition">View Moment</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+  $$('.viewBtn').forEach(b=>b.addEventListener('click',e=>{
+    const id=parseInt(e.currentTarget.dataset.id);
+    openModal(galleryData.find(x=>x.id===id));
+  }));
+}
+renderGallery();
+
+// filter buttons
+$$('.filterBtn').forEach(btn=>btn.addEventListener('click',()=>{
+  $$('.filterBtn').forEach(b=>{b.classList.remove('bg-white','text-black'); b.classList.add('text-white/60')});
+  btn.classList.add('bg-white','text-black'); btn.classList.remove('text-white/60');
+  filter=btn.dataset.filter; searchQuery=''; $('#heroSearch').value=''; $('#clearSearch').classList.add('hidden'); renderGallery();
+}));
+
+// search
+const heroSearch=$('#heroSearch');
+function doSearch(val){
+  searchQuery=val.trim();
+  if(searchQuery){ $('#clearSearch').classList.remove('hidden'); $('#clearSearch').classList.add('grid'); } else { $('#clearSearch').classList.add('hidden') }
+  renderGallery();
+  if(searchQuery) document.getElementById('gallery').scrollIntoView({behavior:'smooth', block:'start'});
+}
+heroSearch.addEventListener('input',e=>doSearch(e.target.value));
+$('#searchBtn').addEventListener('click',()=>doSearch(heroSearch.value));
+$('#clearSearch').addEventListener('click',()=>{heroSearch.value='';doSearch('');});
+$$('.chip').forEach(c=>c.addEventListener('click',()=>{heroSearch.value=c.dataset.chip; doSearch(c.dataset.chip)}));
+$('#navSearchBtn').addEventListener('click',()=>{heroSearch.focus(); window.scrollTo({top:0,behavior:'smooth'})});
+function clearSearch(){ heroSearch.value=''; doSearch(''); }
+
+// upload
+const photoInput=$('#photoInput'), previewImg=$('#previewImg'), emptyState=$('#emptyState'), previewWeb=$('#previewWeb'), previewGlow=$('#previewGlow'), previewBadge=$('#previewBadge'), statusText=$('#statusText'), successMessage=$('#successMessage');
+let currentImage=null;
+
+function setPreview(src){
+  currentImage=src;
+  previewImg.src=src; previewImg.classList.remove('hidden');
+  emptyState.classList.add('hidden'); previewWeb.classList.remove('hidden'); previewGlow.classList.remove('hidden');
+  previewBadge.textContent='WEB READY'; previewBadge.className='text-[10px] tracking-widest bg-emerald-500 text-white px-3 py-1 rounded-full';
+  statusText.textContent='LIVE'; statusText.className='text-xs font-bold mt-1 text-emerald-400';
+  $('#removeBtn').disabled=false; $('#replaceBtn').disabled=false;
+  // add to gallery
+  const newItem={id:Date.now(), title:'Your Spider Moment', author:'You', likes: Math.floor(Math.random()*50+12), cat:'recent', img:src, desc:'Your moment is now part of the Web — woven into the collective gallery.', yours:true};
+  galleryData.unshift(newItem);
+  renderGallery();
+  successMessage.classList.remove('hidden');
+  setTimeout(()=>successMessage.classList.add('hidden'), 4000);
+  // scroll to preview on mobile
+  if(innerWidth<1024) $('#previewWrap').scrollIntoView({behavior:'smooth', block:'center'});
+}
+$('#uploadBtn').addEventListener('click',()=>photoInput.click());
+$('#replaceBtn').addEventListener('click',()=>photoInput.click());
+$('#demoBtn').addEventListener('click',()=>{
+  const demo='https://images.unsplash.com/photo-1636841415440-e0051454a56a?q=80&w=800&auto=format&fit=crop';
+  setPreview(demo);
+});
+photoInput.addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  if(file.size>10*1024*1024){ alert('File too large (max 10MB)'); return; }
+  const reader=new FileReader();
+  reader.onload=ev=> setPreview(ev.target.result);
+  reader.readAsDataURL(file);
+});
+$('#removeBtn').addEventListener('click',()=>{
+  previewImg.classList.add('hidden'); previewImg.src=''; emptyState.classList.remove('hidden'); previewWeb.classList.add('hidden'); previewGlow.classList.add('hidden');
+  previewBadge.textContent='AWAITING UPLOAD'; previewBadge.className='text-[10px] tracking-widest bg-[#FF1432] text-white px-3 py-1 rounded-full';
+  statusText.textContent='EMPTY'; statusText.className='text-xs font-bold mt-1';
+  $('#removeBtn').disabled=true; $('#replaceBtn').disabled=true; photoInput.value=''; currentImage=null;
+});
+// drag & drop
+const dropZone=$('#dropZone');
+['dragenter','dragover'].forEach(ev=> dropZone.addEventListener(ev,e=>{e.preventDefault(); dropZone.classList.add('border-[#FF1432]/50');}));
+['dragleave','drop'].forEach(ev=> dropZone.addEventListener(ev,e=>{e.preventDefault(); dropZone.classList.remove('border-[#FF1432]/50');}));
+dropZone.addEventListener('drop',e=>{
+  const file=e.dataTransfer.files[0]; if(!file||!file.type.startsWith('image/')) return;
+  const reader=new FileReader(); reader.onload=ev=>setPreview(ev.target.result); reader.readAsDataURL(file);
+});
+dropZone.addEventListener('click',e=>{
+  if(e.target.closest('button')) return;
+  photoInput.click();
+});
+
+// modal
+function openModal(item){
+  $('#modalImg').src=item.img;
+  $('#modalTitle').textContent=item.title;
+  $('#modalDesc').textContent=item.desc;
+  $('#modalAuthor').textContent=item.author;
+  $('#modalAvatar').src=`https://i.pravatar.cc/100?u=${item.author}`;
+  $('#modalLikes').textContent='♥ '+item.likes;
+  $('#modalDate').textContent= item.yours? 'JUST NOW • YOUR WEB' : 'RECENT • SPIDER-VERSE';
+  $('#momentModal').classList.remove('hidden'); document.body.style.overflow='hidden';
+}
+function closeModal(){ $('#momentModal').classList.add('hidden'); document.body.style.overflow='';}
+$('#closeModal').addEventListener('click',closeModal);
+$('#modalBackdrop').addEventListener('click',closeModal);
+addEventListener('keydown',e=>{if(e.key==='Escape') closeModal()});
+
+// nav active on scroll
+const sections=['home','spider-web','upload','gallery','about'];
+const navlinks=$$('.navlink');
+addEventListener('scroll',()=>{
+  let cur='home';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && scrollY >= el.offsetTop - 180) cur=id;
+  });
+  navlinks.forEach(a=>{
+    a.classList.toggle('text-white', a.getAttribute('href')==='#'+cur);
+    a.classList.toggle('text-white/70', a.getAttribute('href')!=='#'+cur);
+  });
+});
+</script>
+</body>
+</html>
